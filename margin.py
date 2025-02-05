@@ -90,20 +90,31 @@ def main():
     # Convert results to a DataFrame
     df = pd.DataFrame(results)
     
-    # Display the results
+    # Add filters for Pass Rate, Price, and Allocation
+    st.sidebar.header("Filters")
+    filter_pass_rate = st.sidebar.slider("Filter by Pass Rate (%)", float(pass_rate_min), float(pass_rate_max), (float(pass_rate_min), float(pass_rate_max)))
+    filter_price = st.sidebar.slider("Filter by Price ($)", float(price_min), float(price_max), (float(price_min), float(price_max)))
+    filter_allocation = st.sidebar.slider("Filter by Allocation ($)", float(allocation_min), float(allocation_max), (float(allocation_min), float(allocation_max)))
+    
+    # Apply filters
+    filtered_df = df[
+        (df["Pass Rate (%)"] >= filter_pass_rate[0]) & (df["Pass Rate (%)"] <= filter_pass_rate[1]) &
+        (df["Price ($)"] >= filter_price[0]) & (df["Price ($)"] <= filter_price[1]) &
+        (df["Allocation ($)"] >= filter_allocation[0]) & (df["Allocation ($)"] <= filter_allocation[1])
+    ]
+    
+    # Display the filtered results
     st.header("Financial Scenarios")
-    st.write(df)
+    st.write(filtered_df)
     
     # Allow user to select a row for detailed metrics
     st.header("Detailed Metrics for Selected Scenario")
-    selected_index = st.number_input("Enter the row number to view detailed metrics:", min_value=0, max_value=len(df) - 1, value=0)
+    selected_index = st.selectbox("Select a scenario to view detailed metrics:", filtered_df.index)
     
-    if selected_index >= 0 and selected_index < len(df):
-        selected_row = df.iloc[selected_index]
+    if selected_index is not None:
+        selected_row = filtered_df.loc[selected_index]
         st.write("### Selected Scenario Details")
         st.write(selected_row)
-    else:
-        st.write("Please select a valid row number.")
 
 if __name__ == "__main__":
     main()
